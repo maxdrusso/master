@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="utf-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Businnes, Portfolio, Corporate"> 
+	<meta name="Author" content="WebThemez"> 
+    <title>Lavado Autos</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome/css/font-awesome.min.css" />
+	<link rel="stylesheet" href="elegant_font/style.css" />
+    <!--[if lte IE 7]><script src="elegant_font/lte-ie7.js"></script><![endif]-->
+    <link rel="stylesheet" href="css/magnific-popup.css">
+    <link rel="stylesheet" href="css/slider-pro.css">
+    <link rel="stylesheet" href="css/owl.carousel.css">
+    <link rel="stylesheet" href="css/owl.theme.css">
+    <link rel="stylesheet" href="css/owl.transitions.css">
+    <link rel="stylesheet" href="css/animate.css">
+	    <link rel="stylesheet" href="elegant_font/style.css"> 
+    <link rel="stylesheet" href="css/style.css"> 
+
+    <!--[if lt IE 9]>
+        <script src="js/html5shiv.min.js"></script>
+        <script src="js/respond.min.js"></script>
+        <script type="text/javascript" src="js/selectivizr.js"></script>
+    <![endif]-->
+
+    <script>
+        window.onload = function () {
+            // Variables
+            let baseDeDatos = [
+                {
+                    id: 1,
+                    nombre: 'Lavado Normal',
+                    precio: 5000,
+                    imagen: href="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQn1sw7LjOV8WBbOim2cwppr1CGK0AFZdmhYA&usqp=CAU"
+                },
+                {
+                    id: 2,
+                    nombre: 'Lavado Super',
+                    precio: 8000,
+                    imagen: href="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQn1sw7LjOV8WBbOim2cwppr1CGK0AFZdmhYA&usqp=CAU"
+                },
+            ]
+            let $items = document.querySelector('#items');
+            let carrito = [];
+            let total = 0;
+            let neto = 0;
+            let iva = 0;
+            let final = 0;
+            let $carrito = document.querySelector('#carrito');
+            let $total = document.querySelector('#total');
+            let $neto = document.querySelector('#neto');
+            let $iva = document.querySelector('#iva');
+            let $final = document.querySelector('#final');
+            let $botonVaciar = document.querySelector('#boton-vaciar');
+            let $botonComprar = document.querySelector('#boton-comprar');
+      
+            // Funciones
+            function renderItems() {
+                for (let info of baseDeDatos) {
+                    // Estructura
+                    let miNodo = document.createElement('div');
+                    miNodo.classList.add('card', 'col-sm-4');
+                    // Body
+                    let miNodoCardBody = document.createElement('div');
+                    miNodoCardBody.classList.add('card-body');
+                    // Titulo
+                    let miNodoTitle = document.createElement('h5');
+                    // miNodoTitle.style.height = '1px';
+                    miNodoTitle.classList.add('card-title');
+                    miNodoTitle.textContent = info['nombre'];
+                    // Imagen
+                    let miNodoImagen = document.createElement('img');
+                    miNodoImagen.style.width = '150px';
+                    miNodoImagen.style.height = '150px';
+                    miNodoImagen.classList.add('img-fluid');
+                    miNodoImagen.setAttribute('src', info['imagen']);
+                    // Precio
+                    let miNodoPrecio = document.createElement('p');
+                    miNodoPrecio.classList.add('card-text');
+                    miNodoPrecio.textContent = '$' + info['precio'];
+                    // Boton 
+                    let miNodoBoton = document.createElement('button');
+                    miNodoBoton.classList.add('btn', 'btn-primary');
+                    miNodoBoton.textContent = '+';
+                    miNodoBoton.setAttribute('marcador', info['id']);
+                    miNodoBoton.addEventListener('click', anyadirCarrito);
+                    // Insertamos
+                    miNodoCardBody.appendChild(miNodoImagen);
+                    miNodoCardBody.appendChild(miNodoTitle);
+                    miNodoCardBody.appendChild(miNodoPrecio);
+                    miNodoCardBody.appendChild(miNodoBoton);
+                    miNodo.appendChild(miNodoCardBody);
+                    $items.appendChild(miNodo);
+                }
+            }
+      
+            function anyadirCarrito() {
+                // Anyadimos el Nodo a nuestro carrito
+                carrito.push(this.getAttribute('marcador'))
+                // Calculo el total
+                calcularTotal();
+                // calcularNeto();
+                calcularIva();
+                precioFinal();
+                // Renderizamos el carrito 
+                renderizarCarrito();
+            }
+      
+            function renderizarCarrito() {
+                // Vaciamos todo el html
+                $carrito.textContent = '';
+                // Quitamos los duplicados
+                let carritoSinDuplicados = [...new Set(carrito)];
+                // Generamos los Nodos a partir de carrito
+                carritoSinDuplicados.forEach(function (item, indice) {
+                    // Obtenemos el item que necesitamos de la variable base de datos
+                    let miItem = baseDeDatos.filter(function (itemBaseDatos) {
+                        return itemBaseDatos['id'] == item;
+                    });
+                    // Cuenta el número de veces que se repite el producto
+                    let numeroUnidadesItem = carrito.reduce(function (total, itemId) {
+                        return itemId === item ? total += 1 : total;
+                    }, 0);
+                    // Creamos el nodo del item del carrito
+                    let miNodo = document.createElement('li');
+                    miNodo.classList.add('list-group-item', 'text-right', 'mx-2');
+                    miNodo.textContent = `${numeroUnidadesItem} x ${miItem[0]['nombre']} - $${miItem[0]['precio']}`;
+                    // Boton de borrar
+                    let miBoton = document.createElement('button');
+                    miBoton.classList.add('btn', 'btn-danger', 'mx-5');
+                    miBoton.textContent = 'X';
+                    miBoton.style.marginLeft = '1rem';
+                    miBoton.setAttribute('item', item);
+                    miBoton.addEventListener('click', borrarItemCarrito);
+                    // Mezclamos nodos
+                    miNodo.appendChild(miBoton);
+                    $carrito.appendChild(miNodo);
+                })
+            }
+      
+            function borrarItemCarrito() {
+                console.log()
+                // Obtenemos el producto ID que hay en el boton pulsado
+                let id = this.getAttribute('item');
+                // Borramos todos los productos
+                carrito = carrito.filter(function (carritoId) {
+                    return carritoId !== id;
+                });
+                // volvemos a renderizar
+                renderizarCarrito();
+                // Calculamos de nuevo el precio
+                calcularTotal();
+            }
+      
+            function calcularTotal() {
+                // Limpiamos precio anterior
+                total = 0;
+                // Recorremos el array del carrito
+                for (let item of carrito) {
+                    // De cada elemento obtenemos su precio
+                    let miItem = baseDeDatos.filter(function (itemBaseDatos) {
+                        return itemBaseDatos['id'] == item;
+                    });
+                    total = total + miItem[0]['precio'];
+                }
+                // Formateamos el total para que solo tenga dos decimales
+                let totalDosDecimales = total.toFixed(0);
+                // Renderizamos el precio en el HTML
+                $total.textContent = totalDosDecimales;
+            }
+      
+            function calcularIva() {
+                // Limpiamos el valor
+                iva = 0;
+                iva = total * 0.19;
+                // Formateamos el total para que solo tenga dos decimales
+                let ivaDosDecimales = iva.toFixed(0);
+                // Renderizamos el precio en el HTML
+                $iva.textContent = ivaDosDecimales;
+            }
+      
+            function precioFinal() {
+                // Limpiamos el valor
+                final = 0;
+                final = total + iva;
+                // Formateamos el total para que solo tenga dos decimales
+                let finalDosDecimales = final.toFixed(0);
+                // Renderizamos el precio en el HTML
+                $final.textContent = finalDosDecimales;
+            }
+      
+            function vaciarCarrito() {
+                // Limpiamos los productos guardados
+                carrito = [];
+                // Renderizamos los cambios
+                renderizarCarrito();
+                calcularTotal();
+                calcularIva();
+                precioFinal();
+            }
+      
+            // Eventos
+            $botonVaciar.addEventListener('click', vaciarCarrito);
+      
+            // Inicio
+            renderItems();
+        }
+              ele.onpaste = function(e){
+              e.preventDefault();
+           }
+      
+      
+      </script>
+
+
+        <script>
+
+            function validado () {
+                var regName = / ^ [a-zA-Z] + [a-zA-Z] + $ / ;
+                var nombre = documento .getElementById ( 'nombre' ) .valor;
+                if (! regName.test (nombre)) {
+                    alerta ( 'Por favor ingrese su nombre completo (nombre y apellido).' );
+                    document .getElementById ( 'name' ) .focus ();
+                    return  false ;
+                } else {
+                    alerta ( 'nombre válido dado.' );
+                    return  TextTrackCue ;
+                }
+            }
+
+
+        </script>
+
+        <script>
+            var regName = / ^ [a-zA-Z] + [a-zA-Z] + $ / ;
+            var nombre = documento .getElementById ( 'nameInput' ) .value;
+            if (! regName.test (nombre)) {
+                alerta ( 'Nombre inválido' );
+            } else {
+                alerta ( 'nombre válido' );
+}
+        </script>
+
+            <script>
+                function checkRut(rut) {
+            // Despejar Puntos
+            var valor = rut.value.replace('.','');
+            // Despejar Guión
+            valor = valor.replace('-','');
+
+            // Aislar Cuerpo y Dígito Verificador
+            cuerpo = valor.slice(0,-1);
+            dv = valor.slice(-1).toUpperCase();
+
+            // Formatear RUN
+            rut.value = cuerpo + '-'+ dv
+
+            // Si no cumple con el mínimo ej. (n.nnn.nnn)
+            if(cuerpo.length < 7) { rut.setCustomValidity("RUT Incompleto"); return false;}
+
+            // Calcular Dígito Verificador
+            suma = 0;
+            multiplo = 2;
+
+            // Para cada dígito del Cuerpo
+            for(i=1;i<=cuerpo.length;i++) {
+
+                // Obtener su Producto con el Múltiplo Correspondiente
+                index = multiplo * valor.charAt(cuerpo.length - i);
+                
+                // Sumar al Contador General
+                suma = suma + index;
+                
+                // Consolidar Múltiplo dentro del rango [2,7]
+                if(multiplo < 7) { multiplo = multiplo + 1; } else { multiplo = 2; }
+
+            }
+
+            // Calcular Dígito Verificador en base al Módulo 11
+            dvEsperado = 11 - (suma % 11);
+
+            // Casos Especiales (0 y K)
+            dv = (dv == 'K')?10:dv;
+            dv = (dv == 0)?11:dv;
+
+            // Validar que el Cuerpo coincide con su Dígito Verificador
+            if(dvEsperado != dv) { rut.setCustomValidity("RUT Inválido"); return false; }
+
+            // Si todo sale bien, eliminar errores (decretar que es válido)
+            rut.setCustomValidity('');
+            }
+            </script>
+
+            <script>
+
+                function validarEmail(valor) {
+                if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3,4})+$/.test(valor)){
+                alert("La dirección de email " + valor + " es correcta.");
+                } else {
+                alert("La dirección de email es incorrecta.");
+                }
+                }
+                
+                function soloLetras(e) {
+                    key = e.keyCode || e.which;
+                    tecla = String.fromCharCode(key).toLowerCase();
+                    letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
+                    especiales = [8, 37, 39, 46];
+                
+                    tecla_especial = false
+                    for(var i in especiales) {
+                        if(key == especiales[i]) {
+                            tecla_especial = true;
+                            break;
+                        }
+                    }
+                
+                    if(letras.indexOf(tecla) == -1 && !tecla_especial)
+                        return false;
+                }
+
+                
+                function limpia() {
+                    var val = document.getElementById("miInput").value;
+                    var tam = val.length;
+                    for(i = 0; i < tam; i++) {
+                        if(!isNaN(val[i]))
+                            document.getElementById("miInput").value = '';
+                    }
+                }
+                
+            </script>
+
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+                <script>
+                $(document).ready(function(){
+                $("input").focus(function(){
+                    $("span").css("display", "inline").fadeOut(2000);
+                });
+                });
+                </script>
+
+
+                <script type="text/javascript">
+                    function soloNumeros(evt)
+                    {
+                        var code = (evt.which) ? evt.which : evt.keyCode;
+                        if(code==8) 
+                        {
+                        //backspace
+                        return true;
+                        }
+                        else if(code>=48 && code<=57) 
+                        {
+                        //is a number
+                        return true;
+                        }
+                        else
+                        {
+                        return false;
+                        }
+                    }
+                    </script>
+
+                </script>
+
+        
+</head>
+
+<body>
+    <!-- Header End -->
+    <header>
+        <!-- Navigation Menu start-->
+		
+	<nav id="topNav" class="navbar navbar-default main-menu">
+    <div class="container">
+        <button class="navbar-toggler hidden-md-up pull-right" type="button" data-toggle="collapse" data-target="#collapsingNavbar">
+        </button> 
+		 <a class="navbar-brand page-scroll" href="#slider"></a>
+        <div class="collapse navbar-toggleable-sm" id="collapsingNavbar">
+            <ul class="nav navbar-nav">
+                 <li class="active">
+                            <a href="#slider">INICIO</a>
+                        </li>
+                        <li>
+                            <a href="#services">INGRESAR CLIENTES</a>
+                        </li>
+                        <li>
+                            <a href="#about">INGRESAR VEHICULO</a>
+                        </li>
+						 <li>
+                            <a href="#menuCard">PRECIOS</a>
+                        </li> 
+                        <li>
+                            <a href="#portfolio">LOCALES</a>
+                        </li> 
+                        <li>
+                            <a href="#contact">CONTACTO</a>
+                        </li>
+            </ul> 
+        </div>
+    </div>
+</nav>
+
+        
+    </header>
+
+    <section class="slider-pro slider" id="slider">
+        <div class="sp-slides">
+
+            <!-- Slides -->
+            <div class="sp-slide main-slides">
+            <div class="img-overlay"></div>
+                <img class="sp-image" src="images/slider/slider-img-1.jpg" alt="Slider 2"/> 
+                <h1 class="sp-layer slider-text-big"
+                data-position="center" data-show-transition="left" data-hide-transition="right" data-vertical="55%" data-show-delay="1500" data-hide-delay="200">
+                <span class="highlight-texts">LAVAMOS SU AUTO</span>
+                </h1> 
+            </div>
+            <!-- Slides End -->
+			
+            <!-- Slides -->
+            <div class="sp-slide main-slides">
+                <div class="img-overlay"></div> 
+                <img class="sp-image" src="images/slider/slider-img-2.jpg" alt="Slider 1"/> 
+                <h1 class="sp-layer slider-text-big"
+                data-position="center" data-show-transition="left" data-hide-transition="right" data-vertical="55%" data-show-delay="1500" data-hide-delay="200">
+                <span class="highlight-texts"></span>
+                </h1> 
+            </div>
+            <!-- Slides End -->
+
+
+            <!-- Slides -->
+            <div class="sp-slide main-slides">
+                <div class="img-overlay"></div> 
+                <img class="sp-image" src="images/slider/slider-img-3.jpg" alt="Slider 3"/> 
+                <h1 class="sp-layer slider-text-big"
+                data-position="center" data-show-transition="left" data-hide-transition="right" data-vertical="55%" data-show-delay="1500" data-hide-delay="200">
+                <span class="highlight-texts"></span>
+                </h1> 
+            </div>
+            <!-- Slides End -->
+
+        </div>
+    </section>
+
+
+    <section id="services" class="section-wrapper">
+        <div class="container">
+            <div class="col-md-12 col-sm-12 col-xs-12 section-header wow fadeInDown">
+                <h2><span class="highlight-text">INGRESAR CLIENTES</span></h2> 
+
+                <label for="Rut">Rut:</label>
+                <input type="text" id="rut" name="rut" required oninput="checkRut(this)" placeholder="Ingrese RUT" class="form-control" onkeyup="validar()"/>
+
+                <label for="Nombre">Nombre:</label>
+                <input type="text"  class="form-control" onkeypress="return soloLetras(event)" onblur="limpia()" id="miInput" placeholder="Solo Letras" maxlength="50">
+                <div id="errorNombre"></div>
+    
+                <label for="Apellido">Apellido:</label>
+                <input type="text"  class="form-control" onkeypress="return soloLetras(event)" onblur="limpia()" id="miInput" placeholder="Solo Letras" maxlength="50">
+                <div id="errorApellido"></div>
+
+                <label for="Fecha">Fecha Nacimiento:</label>
+                <input type="date" id="fecha" class="form-control"  />
+
+                <label for="Apellido">Direccion:</label>
+                <input type="text" rows="7" cols="40" id="comment" class="form-control"  placeholder="Ingrese Direccion" maxlength="100" onKeyDown="cuenta()" onKeyUp="cuenta()" required>
+
+    
+                <label for="email">Email:</label>
+                <input type="email"   class="form-control" onkeyup="validarEmail" placeholder="Correo Valido">
+                <div id="errorEmail"></div>
+
+                <label for="Comuna" required="required" >Comuna:</label>
+                <select class="form-control"  >
+                    <option selected="selected">Seleccione</option>
+                    <option>Macul</option>
+                    <option>Santiago</option>
+                    <option>Maipu</option>
+                    <option>Puente</option>
+                  </select>
+                <div id="#"></div>
+
+                <br>
+                <div class="btn-group">
+                    <button type="button" id="botonvalidar" class="btn btn-primary" value="Valida"
+                    onclick="alert('\  Cliente Ingresado \n  Lavado Los Eren ')">Enviar</button>
+                    <script src="validarRUT.js"></script>
+                </div>
+
+                </div>   
+                <div id="mensajefinal">
+    
+                </div>
+              </div>
+            </div>
+            </div>
+
+        </div>
+    </section> 
+
+
+    <section id="about" class="about-sec section-wrapper description">
+        <div class="container">
+            <div class="col-md-12 col-sm-12 col-xs-12 section-header wow fadeInDown">
+            <h2><span class="highlight-text">INGRESAR VEHICULO</span></h2> 
+
+            <div class="form-group">
+                <label for="exampleFormControlSelect2">Tipo de Vehiculo</label>
+                <select class="form-control">
+                  <option selected="selected">Seleccione</option>
+                  <option>Furgon</option>
+                  <option>Automovil</option>
+                  <option>Camion</option>
+                  <option>Camioneta</option>
+                  <option>Moto</option>
+                </select>
+              </div>
+            <label for="email">Marca:</label>
+            <input type="text" id="email" class="form-control" onkeypress="return soloLetras(event)" onblur="limpia()" id="miInput" placeholder="Solo Letras" maxlength="20" />
+            <div id="errorEmail"></div>
+
+            <label for="email">Modelo:</label>
+            <input type="text" id="email" class="form-control" onkeypress="return soloLetras(event)" onblur="limpia()" id="miInput" placeholder="Solo Letras" maxlength="20" />
+            <div id="errorEmail"></div>
+
+
+            <label for="año">Año:</label>
+            <input type="text" id="age" name="age"  class="form-control" onkeypress="return soloNumeros(event);" placeholder="Solo Numeros"/>
+            <div id="error"></div>
+ 
+
+
+            <div class="btn-group">
+            <button type="button" id="botonvalidar" class="btn btn-primary" value="Valida"
+              onclick="alert('\  Vehiculo Ingresado \n  Lavado Los Eren ')">Enviar</button>
+            </div>
+
+            </div>
+          </div>
+        </div>
+    </section> 
+  
+<section class="menus style3" id="menuCard">
+                <div class="container"> 
+                    <div class="row"> 
+	
+	    <!-- Section Header -->
+                <div class="col-md-12 col-sm-12 col-xs-12 section-header wow fadeInDown">
+                    <h2><span class="highlight-text">NUESTROS PRECIOS</span></h2> 
+                </div>
+                <!-- Section Header End -->
+				
+                        <div class="menus-container"> 
+                                <!-- menu --> 
+                                <div class="row">
+                                    <!-- Elementos generados a partir del JSON -->
+                                    <main id="items" class="col-sm-8 row"></main>
+                                    <!-- Carrito -->
+                                    <aside class="col-sm-4">
+                                        <h2>Carrito</h2>
+                                        <!-- Elementos del carrito -->
+                                        <ul id="carrito" class="list-group"></ul>
+                                        <hr>
+                                        <!-- Precio total -->
+                                        <p class="text-right">Neto: $<span id="total"></p>
+                                        <p class="text-right">IVA 19%: $<span id="iva"></span></p>
+                                        <p class="text-right">Total: $<span id="final"></span></p>
+                                        <button id="boton-vaciar" class="btn btn-danger">Vaciar</button>
+                                        <button onclick="alert('Venta Registrada')" type="button" class="btn btn-primary">Finalizar</button>       
+                                    </aside>
+                                </div>
+                            </div>
+<!-- /menu-carousel -->
+                        </div><!-- /menus-container --> 
+                </div><!-- /container -->
+            </section>
+
+
+    <section id="portfolio" class="bgSection portfolio-section">
+        <div class="container">
+            <div class="row">
+
+                <!-- Section Header -->
+                <div class="col-md-12 col-sm-12 col-xs-12 section-header wow fadeInDown">
+                    <h2><span class="highlight-text">NUESTROS LOCALES</span></h2>
+                    <div class="container Productos">
+                        <br>
+                        <div class="card-deck">
+                          <div class="card bg-dark">
+                            <div class="card-body text-center" style="color: cornsilk;">
+                              <p class="card-text">SANTIAGO</p>
+                              <p class="card-text">Providencia</p>
+                              <img src="super1.jpg" alt="Girl in a jacket" class="img-thumbnail" width="275" height="183">
+                              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.812177768435!2d-70.62333388474701!3d-33.42814078078039!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662cf6284f8acb9%3A0x8d8c2b62ae5d2ada!2sAv.%20Manuel%20Montt%20100%2C%20Providencia%2C%20Regi%C3%B3n%20Metropolitana!5e0!3m2!1ses-419!2scl!4v1598404620957!5m2!1ses-419!2scl" width="275" height="183" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+                            </div>
+                          </div>
+                          <div class="card bg-dark">
+                            <div class="card-body text-center" style="color: cornsilk;">
+                            
+                              <p class="card-text">SANTIAGO</p>
+                              <p class="card-text">Ñuñoa</p>
+                              <img src="super2.jpg" alt="Girl in a jacket" class="img-thumbnail" width="275" height="183">
+                              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3328.853045184837!2d-70.61514068474635!3d-33.45313498077333!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662cf8f0733dacb%3A0x5032589a2da68718!2sUnimarc!5e0!3m2!1ses-419!2scl!4v1598404261803!5m2!1ses-419!2scl" width="275" height="183" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+                              
+                            </div>
+                          </div>
+                          <div class="card bg-dark">
+                            <div class="card-body text-center" style="color: cornsilk;">
+                              <p class="card-text">SANTIAGO</p>
+                              <p class="card-text">Macul</p>
+                              <img src="SUPER4.png" alt="Girl in a jacket" class="img-thumbnail" width="275" height="183">
+                              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3328.853045184837!2d-70.61514068474635!3d-33.45313498077333!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662cf8f0733dacb%3A0x5032589a2da68718!2sUnimarc!5e0!3m2!1ses-419!2scl!4v1598404261803!5m2!1ses-419!2scl" width="275" height="183" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+            
+                            </div>
+                          </div> 
+                        </div>
+                      </div>
+                   
+                </div>
+                <!-- Section Header End -->
+
+            </div>
+        </div>      
+    </section>
+    <!-- Portfolio Section End -->
+
+<section id="team" class="bgSection teams-section"> 
+<div class="parallax-overlay"></div>
+        <div class="teams-wrapper wow fadeInDown">
+            <div class="container">
+                <div class="row">
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </section> 
+
+    <section id="contact" class="section-wrapper contact-section" data-stellar-background-ratio="0.5">
+        <div class="parallax-overlay"></div>
+            <div class="container">
+                <div class="row">
+    
+                    <!-- Section Header -->
+                  <div class="col-md-12 col-sm-12 col-xs-12 section-header wow fadeInDown">
+                        <h2><span class="highlight-text">CONTACTO</span></h2>
+                       
+                        <p class="col-md-8 col-sm-10 col-xs-12 col-md-offset-2 col-sm-offset-1">Rellene el formulario y nos pondremos en contacto con usted</p>
+                    </div> 
+                    <!-- Section Header End -->
+    
+                    <div class="contact-details">
+     
+    
+                        <!-- Contact Form -->
+                        <div class="contact-form wow fadeInDown"> 
+                    
+                        <!--NOTE: Update your email Id in "contact_me.php" file in order to receive emails from your contact form-->
+                        <form name="sentMessage" id="contactForm"  novalidate>  
+                         <div class="col-md-6">
+                        <input type="text" class="form-control" 
+                        placeholder="Nombre Completo" id="name" required
+                        data-validation-required-message="Please enter your name" />
+                        <p class="help-block"></p>
+                        </div> 	
+                         <div class="col-md-6">
+                        <input type="Correo" class="form-control" placeholder="Email" 
+                        id="email" required
+                        data-validation-required-message="Please enter your email" />
+                        </div> 	
+                 
+                        <div class="col-md-12">
+                        <textarea rows="10" cols="100" class="form-control" 
+                        placeholder="Mensaje" id="message" required
+                        data-validation-required-message="Please enter your message" minlength="5" 
+                        data-validation-minlength-message="Min 5 characters" 
+                        maxlength="999" style="resize:none"></textarea>
+                        </div> 	
+                         
+                        <div class="col-md-8 col-md-offset-2"><br><div id="success"> </div><button type="button" class="btn btn-primary" onclick="alert('\  Mensaje Enviado \n  Muchas Gracias')">Enviar Mensaje</button></div> 
+                        </form>
+                      </div>
+     
+                </div>
+            </div>
+        </section>
+  	
+    <!-- Contact Section End -->
+    <section id="final" class="footer-container">
+        <div class="container">
+            <div class="row footer-containertent">
+                <div class="col-md-4">
+                    <h4>LAVADO LOS EREN</h4>
+                    <p>Empresa dedicada al lavado de vehiculos con herramientas de ultima tecnologia
+                        ademas de colocar todo nuestro estusiasmo en lo que hacemos LAVADO LOS EREN
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h4></h4>
+                    <p></p>
+                </div>
+                <div class="col-md-4 contac-us">
+                    <h4>Contacto</h4>
+                    <p>Todos nuestros locales abiertos</p>
+					<ul>
+                            <li><i class="fa fa-home"></i>Av. Macul 7.000</li>
+                            <li><i class="fa fa-phone"></i>+56994687432</li>
+                            <li><i class="fa fa-envelope-o"></i>info@loseren.cl</li>
+                        </ul> 
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <footer>
+
+        <div class="container">
+            <div class="row">
+                <div class="footer-containertent">
+
+                    <ul class="footer-social-info">
+                        <li>
+                            <a href="#"><i class="fa fa-facebook"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-twitter"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-pinterest"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-google-plus"></i></a>
+                        </li>
+                    </ul>
+					<br/><br/>
+<p><a target="_blank" href="#">Todos Derechos</a> Reservado los Eren</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer End -->
+
+    <script src="js/jquery-1.11.3.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/modernizr.min.js"></script>
+    <script src="js/jquery.easing.1.3.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/jquery.easypiechart.js"></script>
+    <script src="js/isotope.pkgd.min.js"></script>
+    <script src="js/jquery.fitvids.js"></script>
+    <script src="js/jquery.stellar.min.js"></script>
+    <script src="js/jquery.waypoints.min.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/jquery.nav.js"></script>
+    <script src="js/imagesloaded.pkgd.min.js"></script>
+    <script src="js/smooth-scroll.min.js"></script>
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <script src="js/jquery.sliderPro.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+ <script src="contact/jqBootstrapValidation.js"></script>
+ <script src="contact/contact_me.js"></script>
+    <script src="js/custom.js"></script>
+
+</body>
+
+</html>
